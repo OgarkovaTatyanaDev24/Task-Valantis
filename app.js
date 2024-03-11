@@ -10,11 +10,11 @@ function generateHash() {
 
 async function makeRequest(action, params) {
     while (true) {
-        let response = await fetch('https://api.valantis.store:41000/', {
-            method: 'POST',
+        let response = await fetch("https://api.valantis.store:41000/", {
+            method: "POST",
             headers: {
-                'X-Auth': generateHash(),
-                'Content-Type': 'application/json'
+                "X-Auth": generateHash(),
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 "action": action,
@@ -103,30 +103,18 @@ class Products {
     removeDublicates(products) {
         const idSet = new Set();
         return products.filter((el) => {
-            if (!idSet.has(el['id'])) {
+            if (!idSet.has(el["id"])) {
                 idSet.add(el.id)
                 return true
             }
         })
     }
     /**
- * Draws product cards.
- * @param {boolean} filter - Filtration state.
- */
-    async showProducts(filter = false) {
-
-        const preloader = document.getElementById("preloader");
-        const pagination = document.querySelector(".pagination");
-
-        const btnPrev = document.getElementById("prev");
-        const btnNext = document.getElementById("next");
-
-        preloader.style.display = 'flex';
-        btnPrev.disabled = true;
-        btnNext.disabled = true;
-
+* Draws product cards.
+* @param {[string]} productsIds Array of IDs.
+*/
+    async drawProducts(productsIds) {
         const productsEl = document.querySelector(".products")
-        const productsIds = filter ? await this.getFilteredProducts() : await this.getProductsId()
         const data = await this.getProductsDesc(productsIds)
 
         // Clearing previous cards.
@@ -142,14 +130,44 @@ class Products {
                         <p><span class="bold">Id:</span> ${item.id}</p>`
             productsEl.appendChild(productEl)
         })
-
-        preloader.style.display = 'none';
-        pagination.style.display = 'flex';
-
+    }
+    /**
+* Shows products filtered by filter form cards.
+*/
+    async showFilteredProducts() {
+        const pagination = document.getElementById("pagination");
+        pagination.style.display = "none";
+        const productsIds = await this.getFilteredProducts()
+        await this.drawProducts(productsIds)
+    }
+    /**
+* Shows products filtered by filter form cards.
+*/
+    async showPaginatedProducts() {
+        const pagination = document.getElementById("pagination");
+        const btnPrev = document.getElementById("prev");
+        const btnNext = document.getElementById("next");
+        btnPrev.disabled = true;
+        btnNext.disabled = true;
+        const productsIds = await this.getProductsId()
+        await this.drawProducts(productsIds)
         const currentPage = document.getElementById("curPage");
         currentPage.innerHTML = this.currentPage + 1;
+        pagination.style.display = "flex";
         btnPrev.disabled = false;
         btnNext.disabled = false;
+    }
+
+    /**
+ * Draws paginated product cards without filtering.
+ * @param {boolean} filter - Filtration state.
+ */
+    async showProducts(filter = false) {
+        const preloader = document.getElementById("preloader");
+        preloader.style.display = "flex";
+        if (filter) await this.showFilteredProducts();
+        else await this.showPaginatedProducts();
+        preloader.style.display = "none";
     }
 
     // Setup pagination.
@@ -173,21 +191,21 @@ class Products {
     search() {
         const searchButton = document.getElementById("searchButton");
 
-        const inputs = document.querySelectorAll('.input-text');
+        const inputs = document.querySelectorAll(".input-text");
         inputs.forEach((elem) => {
-            elem.addEventListener('input', () => {
+            elem.addEventListener("input", () => {
                 if (elem.value.length < 3) {
-                    searchButton.setAttribute('disabled', true);
+                    searchButton.setAttribute("disabled", true);
                 } else {
-                    searchButton.removeAttribute('disabled');
+                    searchButton.removeAttribute("disabled");
                 }
             })
         })
 
         const form = document.getElementById("filter-form")
-        form.addEventListener('submit', (event) => {
+        form.addEventListener("submit", (event) => {
             event.preventDefault()
-            this.showProducts(true)
+            this.showProducts(event.submitter.id === "searchButton")
         })
     }
     /**
