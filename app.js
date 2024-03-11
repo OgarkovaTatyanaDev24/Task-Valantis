@@ -25,7 +25,8 @@ async function makeRequest(action, params) {
             return (await response.json()).result
         }
         else {
-            console.log(response.statusText);
+            const text = await response.text();
+            console.log(`Request error with code: ${response.status} and text: ${text}`);
         }
     }
 }
