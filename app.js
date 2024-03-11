@@ -10,7 +10,7 @@ function generateHash() {
 
 async function makeRequest(action, params) {
     while (true) {
-        let response = await fetch('http://api.valantis.store:40000/', {
+        let response = await fetch('https://api.valantis.store:41000/', {
             method: 'POST',
             headers: {
                 'X-Auth': generateHash(),
